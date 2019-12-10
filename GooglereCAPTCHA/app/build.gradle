@@ -27,7 +27,10 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+    //dependency for recaptcha (safetynet)
     implementation 'com.google.android.gms:play-services-safetynet:17.0.0'
     implementation 'com.squareup.retrofit2:retrofit:2.3.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
+    //dependency for fast networking for networking
+    implementation 'com.amitshekhar.android:android-networking:1.0.2'
 }
