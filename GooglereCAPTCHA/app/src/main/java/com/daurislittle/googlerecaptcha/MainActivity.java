@@ -1,5 +1,6 @@
 package com.daurislittle.googlerecaptcha;
 
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -26,38 +27,62 @@ import com.google.android.gms.safetynet.SafetyNetApi;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     String TAG = MainActivity.class.getSimpleName();
     String Site_Key = "6LdDG8cUAAAAABqSkaQrqbLu3FNTqz_W0a87AxDY"; //consider making global variable
     String Site_Secret_Key = "6LdDG8cUAAAAAJmiC8zMvagzdbdbCH_0KYtJMZuX"; //consider making global variable
     RequestQueue requestQueue;
+
+    //application space controls
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.reCaptcha);
-        setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = findViewById(R.id.reCaptcha);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        Button btn = findViewById(R.id.reCaptcha);
+        btn.setOnClickListener(this);
+
+        requestQueue=Volley.newRequestQueue(getApplicationContext());
     }
+
+    @Override
+    public void onClick(View view){
+        SafetyNet.getClient(this).verifyWithRecaptcha(Site_Key)
+                .addOnSuccessListener(this, new OnSuccessListener <SafetyNetApi.RecaptchaTokenResponse>(){
+                    @Override
+                    public void onSuccess(SafetyNetApi.RecaptchaTokenResponse response){
+                        if (!response.getTokenResult().isEmpty()){
+                            handleCaptchaResult(response);
+                        }
+                    }
+        })
+                .addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        if (e instanceof  ApiException){
+                            ApiException apiException = (ApiException)e;
+                            Log.d(TAG, "Error Message: " +CommonStatusCodes.getStatusCodeString(apiException.getStatusCode()));
+                        } else {
+                            Log.d(TAG, "Unknow errpr type or error" +e.getMessage());
+                        }
+                    }
+                })
+    )}
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
