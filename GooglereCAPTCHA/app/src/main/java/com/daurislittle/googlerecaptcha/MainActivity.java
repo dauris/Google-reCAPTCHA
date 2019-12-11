@@ -44,8 +44,10 @@ import android.view.MenuItem;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     String TAG = MainActivity.class.getSimpleName();
-    String Site_Key = "6LdDG8cUAAAAABqSkaQrqbLu3FNTqz_W0a87AxDY"; //consider making global variable
-    String Site_Secret_Key = "6LdDG8cUAAAAAJmiC8zMvagzdbdbCH_0KYtJMZuX"; //consider making global variable
+    Button btn;
+    TextView txtV;
+    String Site_Key = "6LcFP8cUAAAAALPrBpvuSPileb7vd_OlhDn7MeI1"; //consider making global variable
+    String Site_Secret_Key = "6LcFP8cUAAAAAJyKpv8FKRkd1bSnR-WuKeLc4nve"; //consider making global variable
     RequestQueue requestQueue;
 
     //application space controls
@@ -54,10 +56,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button btn = findViewById(R.id.reCaptcha);
+        btn = findViewById(R.id.reCaptcha);
+        txtV = findViewById(R.id.verifyText);
         btn.setOnClickListener(this);
 
-        requestQueue=Volley.newRequestQueue(getApplicationContext());
+        requestQueue = Volley.newRequestQueue(getApplicationContext());
     }
 
     @Override
@@ -67,7 +70,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onSuccess(SafetyNetApi.RecaptchaTokenResponse response){
                         if (!response.getTokenResult().isEmpty()){
-                            handleCaptchaResult(response);
+                            handleCaptchaResult(response.getTokenResult());
+
                         }
                     }
         })
@@ -76,13 +80,48 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     public void onFailure(@NonNull Exception e) {
                         if (e instanceof  ApiException){
                             ApiException apiException = (ApiException)e;
-                            Log.d(TAG, "Error Message: " +CommonStatusCodes.getStatusCodeString(apiException.getStatusCode()));
+                            Log.d(TAG, "Error Message: " + CommonStatusCodes.getStatusCodeString(apiException.getStatusCode()));
                         } else {
-                            Log.d(TAG, "Unknow errpr type or error" +e.getMessage());
+                            Log.d(TAG, "Unknown error type or error" + e.getMessage());
                         }
                     }
+                });
+    }
+
+    void handleCaptchaResult(final String responseToken){
+        String url = "https://www.google.com/recaptcha/api/siteverify"; //consider using global variable here
+        StringRequest request = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    if (jsonObject.getBoolean("success")) {
+                        txtV.setTextSize(35);
+                        txtV.setText("Congratulations! You're not a robot anymore");
+                    }
+                } catch (Exception ex) {
+                    Log.d(TAG, "Error message: " + ex.getMessage());
+                }
+            }
+        },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d(TAG, "Error message: " + error.getMessage());
+                    }
                 })
-    )}
+        {
+            @Override
+            protected Map<String,String> getParams(){
+                Map<String,String> params = new HashMap<>();
+                params.put("secret", Site_Secret_Key);
+                params.put("response", responseToken);
+                return params;
+            }
+        };
+        request.setRetryPolicy(new DefaultRetryPolicy(50000,DefaultRetryPolicy.DEFAULT_MAX_RETRIES,DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        requestQueue.add(request);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
