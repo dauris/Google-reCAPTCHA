@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     JSONObject jsonObject = new JSONObject(response);
                     if (jsonObject.getBoolean("success")) {
                         txtV.setTextSize(35);
-                        txtV.setText("Congratulations! You're not a robot anymore");
+                        txtV.setText(R.string.successful_response);
                     }
                 } catch (Exception ex) {
                     Log.d(TAG, "Error message: " + ex.getMessage());

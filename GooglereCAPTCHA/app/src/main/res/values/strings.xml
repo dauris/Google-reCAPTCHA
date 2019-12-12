@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">GooglereCAPTCHA</string>
     <string name="action_settings">Settings</string>
+    <string name="successful_response">Congratulations! You have proven that you are not robot</string>
+    <string name="btn_label">Show reCAPTCHA</string>
+    <string name="app_start_title">Currently waiting to see if you are a robot</string>
 </resources>
